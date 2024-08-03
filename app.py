@@ -132,21 +132,11 @@ def upload_image():
         image_bytes = base64.b64decode(image_data)
         image = Image.open(BytesIO(image_bytes))
         
-        # Ensure the image is in PNG format
-        if image.format != 'PNG':
-            image = image.convert('RGB')
-            # filename = str(uuid.uuid4()) + '.jpg'
-            filename = "image.jpg"
-        else:
-            # filename = str(uuid.uuid4()) + '.png'
-            filename = "image.png"
-        
-        file_path = os.path.join(UPLOAD_FOLDER, filename)
-        image.save(file_path, format='PNG' if image.format == 'PNG' else 'JPEG')
+        image = image.convert('RGB')
 
-        # Upload the image to ImageKit
-        with open(file_path, 'rb') as file:
-            imagekit.upload(file, file_name=filename, options=imagekit_options)
+        filename = "image.png"
+
+        imagekit.upload(image_data, file_name=filename, options=imagekit_options)
         
         file_url = f'{imagekit_url_endpoint}/{filename}'
         
