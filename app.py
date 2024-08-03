@@ -1,9 +1,11 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, send_from_directory
 from azure.ai.vision.imageanalysis import ImageAnalysisClient
 from azure.ai.vision.imageanalysis.models import VisualFeatures
 from azure.core.credentials import AzureKeyCredential
 from openai import AzureOpenAI
 import os
+
+import uuid
 
 app = Flask(__name__, template_folder='static')
 
@@ -25,11 +27,48 @@ openai_client = AzureOpenAI(
 )
 
 deployment_name = 'baseMod'  # Your GPT-35-turbo-instruct deployment name
+UPLOAD_FOLDER = './static/assets/imgs'
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/capture')
+def upload_page():
+    return render_template('capture.html')
+
+@app.route('/upload', methods=['POST'])
+def upload_image():
+    if 'image' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    
+    if file and file.filename.lower().endswith(('png', 'jpg', 'jpeg', 'gif')):
+        # Generate a unique filename
+        filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        
+        file.save(file_path)
+        
+        # Construct the URL (assuming the app is running on localhost:5000)
+        file_url = f'/imgs/{filename}'
+        
+        # Optionally delete the file after processing
+        # os.remove(file_path)
+        
+        return jsonify({"url": file_url})
+    
+    return jsonify({"error": "Invalid file format"}), 400
+
+@app.route('/imgs/<filename>')
+def serve_image(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 @app.route('/analyze_image', methods=['POST'])
 def analyze_image():
