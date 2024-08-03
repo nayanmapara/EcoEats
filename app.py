@@ -82,15 +82,33 @@ def recipe_page():
             return jsonify({"error": "No ingredients provided"}), 400
         
         # Create a prompt for the OpenAI API
-        prompt = f"Generate a recipe based on the following ingredients: {', '.join(ingredients)}"
+        prompt = f"""Generate a recipe in HTML format with Tailwind CSS classes for styling. Use a main `div` with the class `recipe-container`, which should have a semi-transparent background (`bg-gray-800 bg-opacity-50`), rounded corners (`rounded-lg`), padding (`p-6`), and a shadow effect (`shadow-lg`). The recipe title should be an `h3` with the class `recipe-title`, styled with `text-4xl`, `font-bold`, and `text-white`. The recipe instructions should be in a `p` tag with the class `recipe-text`, styled with `text-lg` and `text-white`. Ensure the design is clean, modern, and readable against a dark background. Here are the ingredients: {', '.join(ingredients)}.
+        
+        Sample structure:
+        <div class="recipe-container bg-gray-800 bg-opacity-50 rounded-lg p-6 shadow-lg">
+            <h3 class="recipe-title text-4xl font-bold text-white">Recipe Title</h3>
+            <p class="recipe-text text-lg text-white">
+                <ul>
+                    <li>Recipe Ingredients (With quantity)...</li>
+                </ul>
+                <ul>
+                    <li>Recipe instructions...</li>
+                </ul>
+            </p>
+        </div>
+        
+        """
         
         try:
             response = openai_client.completions.create(
                 model=deployment_name,
                 prompt=prompt,
-                max_tokens=150
+                max_tokens=300
             )
             recipe = response.choices[0].text.strip()
+
+            print(recipe)
+
             return jsonify({"recipe": recipe})
         except Exception as e:
             return jsonify({"error": str(e)}), 500

@@ -1,38 +1,180 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Recipe</title>
+    <!-- Include Tailwind CSS via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1a1a; /* Dark background */
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            padding: 2rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #8ce6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .slide-in {
+            animation: slide-in 0.5s ease-out forwards;
+        }
+        @keyframes slide-in {
+            from {
+                transform: translateY(50%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .footer {
+            background-color: #2d2d2d;
+            padding: 1rem;
+            color: #a1a1a1;
+            text-align: center;
+        }
+        .abstract-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.2;
+        }
+        .shape-1 {
+            background: linear-gradient(135deg, #ff00a5, #00c6ff);
+            width: 300px;
+            height: 300px;
+            top: 20%;
+            left: 10%;
+        }
+        .shape-2 {
+            background: linear-gradient(45deg, #ff6b6b, #f9ca24);
+            width: 200px;
+            height: 200px;
+            bottom: 50%;
+            right: 10%;
+        }
+        .recipe-container {
+            background: rgba(255, 255, 255, 0.2); /* More transparent */
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3); /* Border with transparency */
+        }
+        .recipe-title {
+            color: #00c6ff;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Shadow for better readability */
+        }
+        .recipe-text {
+            color: #e0e0e0; /* Light text color */
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="text-5xl font-bold gradient-text">Delicious Recipe Generator</h1>
+    </header>
 
-{% block title %}Generate Recipe{% endblock %}
+    <main class="relative flex flex-col items-center justify-middle pt-20 min-h-screen">
+        <!-- Abstract Shapes -->
+        <div class="abstract-shape shape-1"></div>
+        <div class="abstract-shape shape-2"></div>
 
-{% block content %}
-    <h2 class="text-xl font-semibold mb-4">Generate a Recipe</h2>
+        <section class="bg-gray-800 p-6 rounded-lg shadow-lg max-w-3xl w-full">
+            <h2 class="text-3xl font-bold mb-4 text-center text-white">Ingredients List</h2>
+            <div class="text-center mb-6">
+                <p id="ingredientsList" class="text-lg text-gray-300">{{ ingredients | join(', ') }}</p>
+            </div>
 
-    <h3 class="text-lg font-semibold mb-2">Ingredients:</h3>
-    <p id="ingredientsList" class="mb-4">{{ ingredients | join(', ') }}</p>
+            <div class="flex justify-center">
+                <button id="generateRecipe" class="bg-gradient-to-r from-teal-400 to-blue-500 text-white p-3 rounded-lg shadow-lg hover:from-teal-500 hover:to-blue-600 transition duration-300">
+                    Generate Recipe
+                </button>
+            </div>
+        </section>
 
-    <button id="generateRecipe" class="bg-blue-600 text-white p-2 rounded">Generate Recipe</button>
+        <section id="recipeResult" class="mt-8 max-w-3xl w-full text-center mb-8">
+            <!-- Display recipe here -->
+        </section>
+    </main>
 
-    <div id="recipeResult" class="mt-4">
-        <!-- Display recipe here -->
-    </div>
-{% endblock %}
+    <footer class="footer">
+        <p>&copy; 2024 Recipe Generator. All rights reserved.</p>
+    </footer>
 
-{% block extra_js %}
     <script>
         document.getElementById('generateRecipe').addEventListener('click', async () => {
-            const ingredients = {{ ingredients | tojson }};
-            const response = await fetch('/recipe', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ ingredients })
-            });
-            const result = await response.json();
-            const recipeResultDiv = document.getElementById('recipeResult');
-            if (result.recipe) {
-                recipeResultDiv.innerHTML = `<h3 class="text-lg font-semibold">Generated Recipe:</h3><p>${result.recipe}</p>`;
-            } else {
-                recipeResultDiv.innerHTML = `<p>${result.error}</p>`;
+            // Extract ingredients from the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const ingredientsParam = urlParams.get('ingredients');
+            const ingredients = ingredientsParam ? ingredientsParam.split(', ') : [];
+
+            // Display ingredients list in UI
+            const ingredientsList = document.getElementById('ingredientsList');
+            ingredientsList.textContent = ingredients.join(', ');
+
+            try {
+                // Make the POST request to the backend
+                const response = await fetch('/recipe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ingredients })
+                });
+
+                // Ensure the response is valid
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const result = await response.json();
+
+                console.log('Recipe result:', result);
+
+                const recipeResultDiv = document.getElementById('recipeResult');
+                recipeResultDiv.classList.add('slide-in'); // Add slide-in animation
+                
+                if (result.recipe) {
+                    recipeResultDiv.innerHTML = `
+                        ${result.recipe}
+                    `;
+                } else {
+                    recipeResultDiv.innerHTML = `<p class="text-red-400">${result.error || 'An error occurred'}</p>`;
+                }
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+                const recipeResultDiv = document.getElementById('recipeResult');
+                recipeResultDiv.classList.add('slide-in'); // Add slide-in animation
+                recipeResultDiv.innerHTML = `<p class="text-red-400">An error occurred: ${error.message}</p>`;
             }
         });
     </script>
-{% endblock %}
+</body>
+</html>
