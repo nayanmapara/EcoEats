@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EcoEats{% endblock %}</title>
+    <!-- Import Tailwind CSS from CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@^3.0/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Additional CSS can be added here -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-100 text-gray-900">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto">
+            <h1 class="text-2xl font-bold">EcoEats</h1>
+            <!-- Navigation can go here -->
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto my-8">
+        {% block content %}
+        <!-- Content will be injected here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white p-4">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 EcoEats. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Additional JavaScript can be added here -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

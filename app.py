@@ -1,11 +1,11 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from azure.ai.vision.imageanalysis import ImageAnalysisClient
 from azure.ai.vision.imageanalysis.models import VisualFeatures
 from azure.core.credentials import AzureKeyCredential
 from openai import AzureOpenAI
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='static')
 
 # Retrieve environment variables
 vision_endpoint = os.environ["VISION_ENDPOINT"]
@@ -25,6 +25,11 @@ openai_client = AzureOpenAI(
 )
 
 deployment_name = 'baseMod'  # Your GPT-35-turbo-instruct deployment name
+
+
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 @app.route('/analyze_image', methods=['POST'])
 def analyze_image():
