@@ -17,7 +17,7 @@
             min-height: 100vh;
         }
         header {
-            background: linear-gradient(to right, #00c6ff, #0072ff);
+            background: linear-gradient(to right, #6EE7B7, #3B82F6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-align: center;
@@ -163,7 +163,9 @@
                 
                 if (result.recipe) {
                     recipeResultDiv.innerHTML = `
+                    <div class="recipe-container">
                         ${result.recipe}
+                    </div>
                     `;
                 } else {
                     recipeResultDiv.innerHTML = `<p class="text-red-400">${result.error || 'An error occurred'}</p>`;

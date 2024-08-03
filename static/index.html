@@ -1,8 +1,111 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoEats</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .slide-in {
+            animation: slide-in 0.5s ease-out forwards;
+        }
+        @keyframes slide-in {
+            from {
+                transform: translateY(50%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .abstract-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.2;
+        }
+        .shape-1 {
+            background: linear-gradient(135deg, #6EE7B7, #3B82F6);
+            width: 300px;
+            height: 300px;
+            top: 20%;
+            left: 10%;
+        }
+        .shape-2 {
+            background: linear-gradient(45deg, #4B5563, #1F2937);
+            width: 200px;
+            height: 200px;
+            bottom: 50%;
+            right: 10%;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <header class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white py-12 px-6 text-center relative z-10">
+        <h1 class="text-5xl font-extrabold">EcoEats</h1>
+        <p class="text-xl mt-2">Transforming Potential Food Waste Into Delicious Recipes</p>
+    </header>
 
-{% block title %}Home Page{% endblock %}
+    <main class="relative flex flex-col items-center justify-center min-h-screen p-6">
+        <!-- Abstract Shapes -->
+        <div class="abstract-shape shape-1"></div>
+        <div class="abstract-shape shape-2"></div>
 
-{% block content %}
-    <h2 class="text-xl font-semibold">Welcome to the Home Page</h2>
-    <p>This is where your main content goes.</p>
-{% endblock %}
+        <section class="bg-gray-800 p-8 rounded-lg shadow-lg max-w-4xl mx-auto mb-12 slide-in">
+            <h2 class="text-3xl font-bold mb-4 text-center">About EcoEats</h2>
+            <p class="text-lg text-gray-300">
+                EcoEats is an innovative project that aims to reduce food waste by providing users with recipes based on the ingredients they have on hand. The app allows users to take a photo of their fridge contents, extract the items from the image, and generate recipes accordingly. It is designed to help users make the most out of what they have, thus contributing to a more sustainable and eco-friendly lifestyle.
+            </p>
+        </section>
+
+        <section class="bg-gray-700 p-8 rounded-lg shadow-lg max-w-4xl mx-auto mb-12 slide-in">
+            <h2 class="text-3xl font-bold mb-4 text-center">Key Features</h2>
+            <ul class="list-disc list-inside text-gray-300">
+                <li class="mb-2">Photo-based ingredient extraction</li>
+                <li class="mb-2">Recipe generation based on available ingredients</li>
+                <li class="mb-2">Sustainable living by reducing food waste</li>
+                <li class="mb-2">Modern and intuitive user interface</li>
+            </ul>
+        </section>
+
+        <section class="bg-gray-800 p-8 rounded-lg shadow-lg max-w-4xl mx-auto mb-12 slide-in">
+            <h2 class="text-3xl font-bold mb-4 text-center">Technologies Used</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-300">
+                <div class="p-6 border rounded-lg shadow-md bg-gray-900">
+                    <h3 class="text-xl font-semibold mb-2">Frontend</h3>
+                    <ul class="list-disc list-inside">
+                        <li>Next.js</li>
+                        <li>React</li>
+                        <li>Tailwind CSS</li>
+                    </ul>
+                </div>
+                <div class="p-6 border rounded-lg shadow-md bg-gray-900">
+                    <h3 class="text-xl font-semibold mb-2">Backend</h3>
+                    <ul class="list-disc list-inside">
+                        <li>Python</li>
+                        <li>Flask</li>
+                        <li>Azure API Integration</li>
+                    </ul>
+                </div>
+                <div class="p-6 border rounded-lg shadow-md bg-gray-900">
+                    <h3 class="text-xl font-semibold mb-2">Cloud & DevOps</h3>
+                    <ul class="list-disc list-inside">
+                        <li>Azure</li>
+                    </ul>
+                </div>
+                <div class="p-6 border rounded-lg shadow-md bg-gray-900">
+                    <h3 class="text-xl font-semibold mb-2">Other Tools</h3>
+                    <ul class="list-disc list-inside">
+                        <li>Azure Vision AI</li>
+                        <li>Azure OpenAI API</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 py-4 text-center">
+        <p>&copy; 2024 EcoEats. All rights reserved.</p>
+    </footer>
+</body>
+</html>
