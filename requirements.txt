@@ -2,3 +2,4 @@ Flask
 azure-ai-vision-imageanalysis
 openai
 imagekitio
+pillow
