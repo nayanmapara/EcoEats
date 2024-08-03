@@ -86,6 +86,8 @@
             </div>
             <!-- Capture Button -->
             <button id="capture" class="capture-button text-white p-4 rounded-lg mt-4 hover:bg-opacity-80 transition">Capture Photo</button>
+            <!-- Flip Camera Button -->
+            <button id="flipCamera" class="bg-gray-800 text-white p-2 rounded-lg mt-4 hover:bg-gray-700 transition">Flip Camera</button>
 
             <!-- Modal for Captured Photo -->
             <div id="photoModal" class="modal">
@@ -106,6 +108,8 @@
         </div>
     </div>
     <script>
+        let currentStream = null;
+        let isFrontCamera = true;
         const video = document.getElementById('video');
         const canvas = document.createElement('canvas');
         const photo = document.getElementById('photo');
@@ -116,18 +120,36 @@
         const closeModalButton = document.getElementById('closeModal');
         const rejectButton = document.getElementById('rejectButton');
         const acceptButton = document.getElementById('acceptButton');
+        const flipCameraButton = document.getElementById('flipCamera');
         let base64Image = '';
 
         // Access camera
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
+        async function startCamera() {
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: isFrontCamera ? 'user' : 'environment'
+                    }
+                };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                // Stop the previous stream if it exists
+                if (currentStream) {
+                    const tracks = currentStream.getTracks();
+                    tracks.forEach(track => track.stop());
+                }
+
                 video.srcObject = stream;
+                currentStream = stream;
                 video.play();
-            })
-            .catch(err => {
+            } catch (err) {
                 console.error("Error accessing camera: ", err);
                 resultDiv.innerHTML = `<p class="text-red-600">Failed to access camera.</p>`;
-            });
+            }
+        }
+
+        // Initialize camera on page load
+        startCamera();
 
         // Capture photo
         captureButton.addEventListener('click', () => {
@@ -140,6 +162,12 @@
             photoModal.style.display = 'flex'; // Show modal
             modalContent.classList.add('show'); // Add zoom effect
             base64Image = photo.src;
+        });
+
+        // Flip camera
+        flipCameraButton.addEventListener('click', () => {
+            isFrontCamera = !isFrontCamera; // Toggle camera
+            startCamera(); // Restart camera with new settings
         });
 
         // Close modal
