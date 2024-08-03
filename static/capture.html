@@ -1,30 +1,122 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Photo</title>
+    <!-- Include Tailwind CSS via CDN for testing -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Additional custom styles */
+        body {
+            background-color: #1a1a1a; /* Dark background */
+            font-family: 'Inter', sans-serif; /* Modern font */
+        }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 50; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.8); /* Black w/ increased opacity */
+            backdrop-filter: blur(5px); /* Blur effect for background */
+        }
+        .modal-content {
+            background-color: #2a2a2a;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #444;
+            width: 90%;
+            max-width: 40%;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5); /* Shadow effect */
+            transition: transform 0.3s ease-in-out; /* Smooth transition */
+        }
+        .modal-content.show {
+            transform: scale(1.05); /* Slight zoom effect */
+        }
+        @media (max-width: 768px) {
+            .modal-content {
+                max-width: 80%;
+            }
+        }
+        @media (max-width: 480px) {
+            .modal-content {
+                max-width: 95%;
+            }
+        }
+        .capture-button {
+            background: linear-gradient(45deg, #1e90ff, #00bfff); /* Gradient background */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Shadow effect */
+        }
+        .capture-button:hover {
+            background: linear-gradient(45deg, #00bfff, #1e90ff); /* Inverted gradient on hover */
+        }
+        .modal-buttons {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Shadow effect for buttons */
+        }
+        .modal-buttons button {
+            transition: transform 0.2s ease-in-out; /* Smooth transition */
+        }
+        .modal-buttons button:hover {
+            transform: scale(1.1); /* Slight zoom effect on hover */
+        }
+        .modal-buttons .bg-red-600 {
+            box-shadow: 0 4px 8px rgba(255,0,0,0.4); /* Red shadow for reject button */
+        }
+        .modal-buttons .bg-green-600 {
+            box-shadow: 0 4px 8px rgba(0,255,0,0.4); /* Green shadow for accept button */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-4">
+        <h2 class="text-4xl font-extrabold text-center mb-8 text-white leading-tight">
+            Snap Your Perfect Shot <br> and Discover Delicious Recipes!
+        </h2>
+        <div class="flex flex-col items-center">
+            <!-- Video Stream -->
+            <div class="relative w-full max-w-md h-80 border border-gray-300 rounded-lg overflow-hidden shadow-md bg-gray-800">
+                <video id="video" class="absolute inset-0 w-full h-full object-cover" autoplay></video>
+            </div>
+            <!-- Capture Button -->
+            <button id="capture" class="capture-button text-white p-4 rounded-lg mt-4 hover:bg-opacity-80 transition">Capture Photo</button>
 
-{% block title %}Capture Photo{% endblock %}
-
-{% block content %}
-    <h2 class="text-xl font-semibold mb-4">Take a Photo</h2>
-    <div class="flex flex-col items-center">
-        <video id="video" class="border rounded mb-4" width="320" height="240" autoplay></video>
-        <button id="capture" class="bg-blue-600 text-white p-2 rounded mb-4">Capture Photo</button>
-        <canvas id="canvas" class="border rounded mb-4" width="320" height="240" style="display: none;"></canvas>
-        <img id="photo" src="" alt="Captured Photo" class="border rounded mb-4" style="display: none;">
-        <button id="upload" class="bg-blue-600 text-white p-2 rounded">Upload Photo</button>
+            <!-- Modal for Captured Photo -->
+            <div id="photoModal" class="modal">
+                <div id="modalContent" class="modal-content text-center">
+                    <button id="closeModal" class="absolute top-4 right-4 text-white hover:text-gray-400 text-3xl">&times;</button>
+                    <div class="align-middle p-4 mt-2 modal-buttons">
+                        <img id="photo" src="" alt="Captured Photo" class="border rounded-lg mb-4 max-w-full" style="max-height: 60%;">
+                        <div class="flex justify-center space-x-4 mt-4">
+                            <button id="rejectButton" class="bg-red-600 text-3xl p-3 rounded-full hover:bg-red-700 transition focus:outline-none">&#128078;</button>
+                            <button id="acceptButton" class="bg-green-600 text-3xl p-3 rounded-full hover:bg-green-700 transition focus:outline-none">&#128077;</button>
+                        </div>
+                    </div>
+                    <div id="result" class="mt-4 text-white">
+                        <!-- Display result here -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="result" class="mt-4">
-        <!-- Display result here -->
-    </div>
-{% endblock %}
-
-{% block extra_js %}
     <script>
         const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
+        const canvas = document.createElement('canvas');
         const photo = document.getElementById('photo');
         const captureButton = document.getElementById('capture');
-        const uploadButton = document.getElementById('upload');
         const resultDiv = document.getElementById('result');
-        let photoBlob = null;
+        const photoModal = document.getElementById('photoModal');
+        const modalContent = document.getElementById('modalContent');
+        const closeModalButton = document.getElementById('closeModal');
+        const rejectButton = document.getElementById('rejectButton');
+        const acceptButton = document.getElementById('acceptButton');
+        let base64Image = '';
 
         // Access camera
         navigator.mediaDevices.getUserMedia({ video: true })
@@ -34,75 +126,95 @@
             })
             .catch(err => {
                 console.error("Error accessing camera: ", err);
-                resultDiv.innerHTML = `<p>Failed to access camera.</p>`;
+                resultDiv.innerHTML = `<p class="text-red-600">Failed to access camera.</p>`;
             });
 
         // Capture photo
         captureButton.addEventListener('click', () => {
-            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-            photo.src = canvas.toDataURL('image/png');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            photo.src = canvas.toDataURL('image/jpg');
             photo.style.display = 'block';
-            canvas.style.display = 'none';
-            photoBlob = dataURLToBlob(photo.src);
+            photoModal.style.display = 'flex'; // Show modal
+            modalContent.classList.add('show'); // Add zoom effect
+            base64Image = photo.src;
+        });
+
+        // Close modal
+        closeModalButton.addEventListener('click', () => {
+            photoModal.style.display = 'none';
+            modalContent.classList.remove('show'); // Remove zoom effect
+        });
+
+        // Close modal when clicking outside of it
+        photoModal.addEventListener('click', (e) => {
+            if (e.target === photoModal) {
+                photoModal.style.display = 'none';
+                modalContent.classList.remove('show'); // Remove zoom effect
+            }
+        });
+
+        // Reject photo
+        rejectButton.addEventListener('click', () => {
+            photoModal.style.display = 'none';
+            modalContent.classList.remove('show'); // Remove zoom effect
         });
 
         // Upload photo
-        uploadButton.addEventListener('click', async () => {
-            if (!photoBlob) {
-                resultDiv.innerHTML = `<p>No photo to upload.</p>`;
+        acceptButton.addEventListener('click', async () => {
+            if (!base64Image) {
+                resultDiv.innerHTML = `<p class="text-red-600">No photo to upload.</p>`;
                 return;
             }
             
-            const formData = new FormData();
-            formData.append('image', photoBlob, 'photo.png');
-            
-            // Upload the photo
-            console.log('Uploading photo...');
-            const uploadResponse = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-            const uploadResult = await uploadResponse.json();
-            console.log('Upload response:', uploadResult); // Debugging
+            photoModal.style.display = 'none';
+            modalContent.classList.remove('show'); // Remove zoom effect
 
-            if (uploadResult.url) {
-                // Prepend the current domain to the image URL
-                const imageUrl = new URL(uploadResult.url, window.location.origin).toString();
-                console.log('Image URL with domain:', imageUrl); // Debugging
-
-                // Analyze the uploaded image
-                console.log('Analyzing image...');
-                const analyzeResponse = await fetch('/analyze_image', {
+            try {
+                const response = await fetch('/upload', {
                     method: 'POST',
-                    body: JSON.stringify({ image_url: imageUrl }),
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64Image })
                 });
-                const analyzeResult = await analyzeResponse.json();
-                console.log('Analyze response:', analyzeResult); // Debugging
-                
-                if (analyzeResult.ingredients) {
-                    // Redirect to the recipe page with the ingredients list
-                    const ingredients = encodeURIComponent(analyzeResult.ingredients.join(', '));
-                    window.location.href = `/recipe?ingredients=${ingredients}`;
-                } else {
-                    resultDiv.innerHTML = `<p>${analyzeResult.error || 'Failed to analyze image.'}</p>`;
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Error:', errorData);
+                    resultDiv.innerHTML = `<p class="text-red-600">${errorData.error || 'Upload failed.'}</p>`;
+                    return;
                 }
-            } else {
-                resultDiv.innerHTML = `<p>${uploadResult.error}</p>`;
+
+                const uploadResult = await response.json();
+
+                if (uploadResult.url) {
+                    console.log('Image uploaded successfully:', uploadResult.url);
+
+                    // Analyze the uploaded image
+                    const analyzeResponse = await fetch('/analyze_image', {
+                        method: 'POST',
+                        body: JSON.stringify({ image_url: uploadResult.url }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const analyzeResult = await analyzeResponse.json();
+
+                    if (analyzeResult.ingredients) {
+                        // Redirect to the recipe page with the ingredients list
+                        const ingredients = encodeURIComponent(analyzeResult.ingredients.join(', '));
+                        const uniqueTimestamp = new Date().getTime();  // Unique parameter to avoid caching
+                        window.location.href = `/recipe?ingredients=${ingredients}&t=${uniqueTimestamp}`;
+                    } else {
+                        resultDiv.innerHTML = `<p class="text-red-600">${analyzeResult.error || 'Failed to analyze image.'}</p>`;
+                    }
+                } else {
+                    resultDiv.innerHTML = `<p class="text-red-600">${uploadResult.error}</p>`;
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultDiv.innerHTML = `<p class="text-red-600">Fetch error: ${error.message}</p>`;
             }
         });
-
-        // Convert data URL to Blob
-        function dataURLToBlob(dataURL) {
-            const [header, data] = dataURL.split(',');
-            const mimeString = header.split(':')[1].split(';')[0];
-            const byteString = atob(data);
-            const arrayBuffer = new ArrayBuffer(byteString.length);
-            const uint8Array = new Uint8Array(arrayBuffer);
-            for (let i = 0; i < byteString.length; i++) {
-                uint8Array[i] = byteString.charCodeAt(i);
-            }
-            return new Blob([arrayBuffer], { type: mimeString });
-        }
     </script>
-{% endblock %}
+</body>
+</html>
