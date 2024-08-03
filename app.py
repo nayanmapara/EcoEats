@@ -40,6 +40,37 @@ def home():
 def upload_page():
     return render_template('capture.html')
 
+@app.route('/recipe', methods=['GET', 'POST'])
+def recipe_page():
+    if request.method == 'GET':
+        # Render the page where users will see the ingredients and recipe
+        ingredients = request.args.getlist('ingredients')
+        if not ingredients:
+            return "No ingredients provided", 400
+        return render_template('recipe.html', ingredients=ingredients)
+    
+    if request.method == 'POST':
+        # Handle recipe generation
+        data = request.json
+        ingredients = data.get('ingredients', [])
+        
+        if not ingredients:
+            return jsonify({"error": "No ingredients provided"}), 400
+        
+        # Create a prompt for the OpenAI API
+        prompt = f"Generate a recipe based on the following ingredients: {', '.join(ingredients)}"
+        
+        try:
+            response = openai_client.completions.create(
+                model=deployment_name,
+                prompt=prompt,
+                max_tokens=150
+            )
+            recipe = response.choices[0].text.strip()
+            return jsonify({"recipe": recipe})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
 @app.route('/upload', methods=['POST'])
 def upload_image():
     if 'image' not in request.files:
@@ -81,22 +112,24 @@ def analyze_image():
     try:
         result = vision_client.analyze_from_url(
             image_url=image_url,
-            visual_features=[VisualFeatures.CAPTION, VisualFeatures.READ],
-            gender_neutral_caption=True,  # Optional
+            visual_features=[VisualFeatures.READ]
         )
-
-        # Aggregate caption results
-        caption_text = result.caption.text if result.caption else None
-        caption_confidence = result.caption.confidence if result.caption else None
         
-        response = {
-            "caption": {
-                "text": caption_text,
-                "confidence": caption_confidence
-            },
-        }
+        # Process the extracted text
+        ingredients_text = ""
+        if result.read:
+            for block in result.read.blocks:
+                for line in block.lines:
+                    ingredients_text += line.text + "\n"
+        
+        # Optionally delete the file after processing
+        # os.remove(file_path)
 
-        return jsonify(response)
+        # Parse text into a list of ingredients
+        ingredients = ingredients_text.split('\n')
+        ingredients = [ingredient.strip() for ingredient in ingredients if ingredient.strip()]
+
+        return jsonify({"ingredients": ingredients})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

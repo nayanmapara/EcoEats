@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Recipe{% endblock %}
+
+{% block content %}
+    <h2 class="text-xl font-semibold mb-4">Generate a Recipe</h2>
+
+    <h3 class="text-lg font-semibold mb-2">Ingredients:</h3>
+    <p id="ingredientsList" class="mb-4">{{ ingredients | join(', ') }}</p>
+
+    <button id="generateRecipe" class="bg-blue-600 text-white p-2 rounded">Generate Recipe</button>
+
+    <div id="recipeResult" class="mt-4">
+        <!-- Display recipe here -->
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.getElementById('generateRecipe').addEventListener('click', async () => {
+            const ingredients = {{ ingredients | tojson }};
+            const response = await fetch('/recipe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ingredients })
+            });
+            const result = await response.json();
+            const recipeResultDiv = document.getElementById('recipeResult');
+            if (result.recipe) {
+                recipeResultDiv.innerHTML = `<h3 class="text-lg font-semibold">Generated Recipe:</h3><p>${result.recipe}</p>`;
+            } else {
+                recipeResultDiv.innerHTML = `<p>${result.error}</p>`;
+            }
+        });
+    </script>
+{% endblock %}

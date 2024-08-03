@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Upload Photo{% endblock %}
+{% block title %}Capture Photo{% endblock %}
 
 {% block content %}
     <h2 class="text-xl font-semibold mb-4">Take a Photo</h2>
@@ -56,15 +56,39 @@
             const formData = new FormData();
             formData.append('image', photoBlob, 'photo.png');
             
-            const response = await fetch('/upload', {
+            // Upload the photo
+            console.log('Uploading photo...');
+            const uploadResponse = await fetch('/upload', {
                 method: 'POST',
                 body: formData
             });
-            const result = await response.json();
-            if (result.url) {
-                resultDiv.innerHTML = `<p>Image uploaded successfully! <a href="${result.url}" target="_blank">View Image</a></p>`;
+            const uploadResult = await uploadResponse.json();
+            console.log('Upload response:', uploadResult); // Debugging
+
+            if (uploadResult.url) {
+                // Prepend the current domain to the image URL
+                const imageUrl = new URL(uploadResult.url, window.location.origin).toString();
+                console.log('Image URL with domain:', imageUrl); // Debugging
+
+                // Analyze the uploaded image
+                console.log('Analyzing image...');
+                const analyzeResponse = await fetch('/analyze_image', {
+                    method: 'POST',
+                    body: JSON.stringify({ image_url: imageUrl }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const analyzeResult = await analyzeResponse.json();
+                console.log('Analyze response:', analyzeResult); // Debugging
+                
+                if (analyzeResult.ingredients) {
+                    // Redirect to the recipe page with the ingredients list
+                    const ingredients = encodeURIComponent(analyzeResult.ingredients.join(', '));
+                    window.location.href = `/recipe?ingredients=${ingredients}`;
+                } else {
+                    resultDiv.innerHTML = `<p>${analyzeResult.error || 'Failed to analyze image.'}</p>`;
+                }
             } else {
-                resultDiv.innerHTML = `<p>${result.error}</p>`;
+                resultDiv.innerHTML = `<p>${uploadResult.error}</p>`;
             }
         });
 
