@@ -110,6 +110,11 @@
         <section class="bg-gray-800 p-6 rounded-lg shadow-lg max-w-3xl w-full">
             <h2 class="text-3xl font-bold mb-4 text-center text-white">Ingredients List</h2>
             <div class="text-center mb-6">
+                
+                <div id="imageDisplay" class="flex flex-row justify-center">
+                    <!-- Display ingredient images here -->
+                </div>
+
                 <p id="ingredientsList" class="text-lg text-gray-300">{{ ingredients | join(', ') }}</p>
             </div>
 
@@ -130,6 +135,20 @@
     </footer>
 
     <script>
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const ingredientsParam = urlParams.get('ingredients');
+        const ingredients = ingredientsParam ? ingredientsParam.split(', ') : [];
+
+        for (let i = 0; i < ingredients.length; i++) {
+            let img = document.createElement('img');
+            img.src = `https://www.themealdb.com/images/ingredients/${ingredients[i]}.png`;
+            img.alt = ingredients[i];
+            img.width = 100;
+            img.height = 100;
+            document.getElementById('imageDisplay').appendChild(img);
+        }
+
         document.getElementById('generateRecipe').addEventListener('click', async () => {
             // Extract ingredients from the URL
             const urlParams = new URLSearchParams(window.location.search);
@@ -178,6 +197,8 @@
                 recipeResultDiv.innerHTML = `<p class="text-red-400">An error occurred: ${error.message}</p>`;
             }
         });
+        // let response = await fetch("https://www.themealdb.com/images/ingredients/");
+        
     </script>
 </body>
 </html>
