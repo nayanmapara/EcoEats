@@ -53,7 +53,7 @@ EcoEats is a web application designed to help users reduce food waste by providi
 ### Usage
 
 1. Open the EcoEats web application in your browser.
-2. Upload a photo of your fridge or pantry contents.
+2. Upload a photo of a the list of items in your fridge or pantry.
 3. The app will process the image and extract the ingredients.
 4. View personalized recipe suggestions based on the detected ingredients.
 
