@@ -1,10 +1,10 @@
 # EcoEats
 
-EcoEats is a web application designed to help users reduce food waste by providing recipes based on the ingredients they have. By analyzing photos of your fridge or pantry, EcoEats generates personalized recipe suggestions to help you make the most out of what you have.
+EcoEats is a web app designed to help users reduce food waste by providing recipes based on the ingredients they have by analyzing photos of the list of items in thier fridge or pantry. EcoEats generates personalized recipe suggestions to help you make the most out of what you have.
 
 ## Features
 
-- **Photo-based Ingredient Extraction**: Upload a photo of your fridge contents and let EcoEats extract the items.
+- **Photo-based Ingredient Extraction**: Upload a photo of the list of items in your fridge and let EcoEats extract the items.
 - **Recipe Generation**: Receive tailored recipes based on the ingredients detected.
 - **Sustainable Living**: Reduce food waste and contribute to a more eco-friendly lifestyle.
 - **Modern User Interface**: Enjoy a clean and intuitive design built with Tailwind CSS.
